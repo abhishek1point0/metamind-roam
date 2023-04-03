@@ -1,0 +1,19 @@
+{
+  "name": "graphgator",
+  "version": "1.0.0",
+  "description": "Description for graphgator.",
+  "main": "./build/main.js",
+  "scripts": {
+    "prebuild:roam": "npm install",
+    "build:roam": "roamjs-scripts build --depot",
+    "start": "roamjs-scripts dev --depot",
+    "dev": "roamjs-scripts dev"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "roamjs-scripts": "^0.26.30"
+  },
+  "dependencies": {
+    "roamjs-components": "^0.75.1"
+  }
+}
