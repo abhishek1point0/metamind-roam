@@ -2,12 +2,47 @@ import runExtension from "roamjs-components/util/runExtension";
 import React from "react";
 import { Button } from "@blueprintjs/core";
 import getCurrentUserEmail from "roamjs-components/queries/getCurrentUserEmail";
+import getAllPageNames from "roamjs-components/queries/getAllPageNames";
+import getPageUidByPageTitle from "roamjs-components/queries/getPageUidByPageTitle";
+import getBasicTreeByParentUid from "roamjs-components/queries/getBasicTreeByParentUid";
+import {createPage, createBlock, deleteBlock} from "roamjs-components/writes";
+import renderToast from "roamjs-components/components/Toast";
 
 const getAllData = () => {
     const graphName = window.roamAlphaAPI.graph.name;
     const email = getCurrentUserEmail();
-    const graphData = { graphName, email }
+    const graphData = { graphName, email };
+    createIndexPage();
     return JSON.stringify(graphData);
+}
+
+const createIndexPage = () => {
+  const indexPageName = "Index Page";
+  const allPages = getAllPageNames();
+  Promise.all([createPage({title: indexPageName,})]).then(
+    (data) => {
+      const pageUide = data[0];
+      allPages.forEach((ele, i) => {
+        createBlock({node: {text: `[[${ele}]]`}, parentUid: pageUide, order: i+1})
+      });
+  }).catch((e) => {
+    const pageUid = getPageUidByPageTitle(indexPageName);
+    const indexBlocks = getBasicTreeByParentUid(pageUid);
+    let deletedBlocks: Promise<string | number>[] = [];
+    indexBlocks.forEach((block) => {
+      deletedBlocks.push(deleteBlock(block.uid));
+    });
+    Promise.all(deletedBlocks).then((data) => {
+      renderToast({
+        content: "Regenerating the index page!",
+        intent: "warning",
+        id: "roam-js-graphgator-index-page"
+      });
+      allPages.forEach((ele, i) => {
+        createBlock({node: {text: `[[${ele}]]`}, parentUid: pageUid, order: i+1})
+      });
+    });
+  });
 }
 
 const postGraph = async () => {
@@ -44,7 +79,11 @@ export default runExtension({
                 onClick: () => {
                   const res = postGraph()
                   res.then((data) =>{
-                    console.log(data);
+                    renderToast({
+                      content: "Your graph is getting synched! Please wait for sometime!",
+                      intent: "primary",
+                      id: "roam-js-graphgator"
+                    });
                   })
                 }
               }
