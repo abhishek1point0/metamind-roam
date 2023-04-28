@@ -1,18 +1,12 @@
 import runExtension from "roamjs-components/util/runExtension";
 import React from "react";
 import { Button } from "@blueprintjs/core";
+import getCurrentUserEmail from "roamjs-components/queries/getCurrentUserEmail";
 
 const getAllData = () => {
-    // const graphData = window.roamAlphaAPI.q(`[:find ?e ?a ?v
-    //   :where
-    //   [?e :block/page ?v]
-    //   [or [?a :block/string]
-    //       [?a :block/children]]]`);
-    const graphData = window.roamAlphaAPI.q(`[:find ?page ?block-text
-      :where
-      [?e :block/page ?page]
-      [?e :block/uid ?block]
-      [?e :block/string ?block-text]]`);
+    const graphName = window.roamAlphaAPI.graph.name;
+    const email = getCurrentUserEmail();
+    const graphData = { graphName, email }
     return JSON.stringify(graphData);
 }
 
