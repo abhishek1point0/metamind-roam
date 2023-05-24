@@ -2,7 +2,6 @@ import runExtension from "roamjs-components/util/runExtension";
 import React from "react";
 import { Button } from "@blueprintjs/core";
 import getCurrentUserEmail from "roamjs-components/queries/getCurrentUserEmail";
-import getAllPageNames from "roamjs-components/queries/getAllPageNames";
 import getPageUidByPageTitle from "roamjs-components/queries/getPageUidByPageTitle";
 import getBasicTreeByParentUid from "roamjs-components/queries/getBasicTreeByParentUid";
 import {createPage, createBlock, deleteBlock} from "roamjs-components/writes";
@@ -18,7 +17,7 @@ const getAllData = () => {
 
 const createIndexPage = () => {
   const indexPageName = "Index Page";
-  const allPages = getAllPageNames();
+  const allPages = getReverseChronoSortPages();
   Promise.all([createPage({title: indexPageName,})]).then(
     (data) => {
       const pageUide = data[0];
@@ -43,6 +42,26 @@ const createIndexPage = () => {
       });
     });
   });
+}
+
+/**
+ * This functions queries all pages of the database and sorts them in reverse
+ * chronological order.
+*/
+const getReverseChronoSortPages= () => {
+  let sortingField = ":edit/time";
+  let pages = window.roamAlphaAPI.q('[ :find ?e :where [?e :node/title] ] ').map(
+    (page: Array<number>)=> window.roamAlphaAPI.pull('[*]',page[0])
+    ).sort(
+      (firstPage: any, secondPage: any) => {
+        let firstPageDate =(new Date(firstPage[sortingField])).valueOf();
+        let secondPageDate = (new Date(secondPage[sortingField])).valueOf();
+        return secondPageDate - firstPageDate;
+      }
+    );
+  debugger;
+  return pages.map((page) => page[":node/title"]);
+
 }
 
 const postGraph = async () => {
