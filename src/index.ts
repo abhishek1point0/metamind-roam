@@ -2,66 +2,16 @@ import runExtension from "roamjs-components/util/runExtension";
 import React from "react";
 import { Button } from "@blueprintjs/core";
 import getCurrentUserEmail from "roamjs-components/queries/getCurrentUserEmail";
-import getPageUidByPageTitle from "roamjs-components/queries/getPageUidByPageTitle";
-import getBasicTreeByParentUid from "roamjs-components/queries/getBasicTreeByParentUid";
-import {createPage, createBlock, deleteBlock} from "roamjs-components/writes";
 import renderToast from "roamjs-components/components/Toast";
+import { createIndexPage, createUpdateLogPage } from "./pageOperations";
 
 const getAllData = () => {
     const graphName = window.roamAlphaAPI.graph.name;
     const email = getCurrentUserEmail();
     const graphData = { graphName, email };
     createIndexPage();
+    createUpdateLogPage();
     return JSON.stringify(graphData);
-}
-
-const createIndexPage = () => {
-  const indexPageName = "Index Page";
-  const allPages = getReverseChronoSortPages();
-  Promise.all([createPage({title: indexPageName,})]).then(
-    (data) => {
-      const pageUide = data[0];
-      allPages.forEach((ele, i) => {
-        createBlock({node: {text: `[[${ele}]]`}, parentUid: pageUide, order: i+1})
-      });
-  }).catch((e) => {
-    const pageUid = getPageUidByPageTitle(indexPageName);
-    const indexBlocks = getBasicTreeByParentUid(pageUid);
-    let deletedBlocks: Promise<string | number>[] = [];
-    indexBlocks.forEach((block) => {
-      deletedBlocks.push(deleteBlock(block.uid));
-    });
-    Promise.all(deletedBlocks).then((data) => {
-      renderToast({
-        content: "Regenerating the index page!",
-        intent: "warning",
-        id: "roam-js-graphgator-index-page"
-      });
-      allPages.forEach((ele, i) => {
-        createBlock({node: {text: `[[${ele}]]`}, parentUid: pageUid, order: i+1})
-      });
-    });
-  });
-}
-
-/**
- * This functions queries all pages of the database and sorts them in reverse
- * chronological order.
-*/
-const getReverseChronoSortPages= () => {
-  let sortingField = ":edit/time";
-  let pages = window.roamAlphaAPI.q('[ :find ?e :where [?e :node/title] ] ').map(
-    (page: Array<number>)=> window.roamAlphaAPI.pull('[*]',page[0])
-    ).sort(
-      (firstPage: any, secondPage: any) => {
-        let firstPageDate =(new Date(firstPage[sortingField])).valueOf();
-        let secondPageDate = (new Date(secondPage[sortingField])).valueOf();
-        return secondPageDate - firstPageDate;
-      }
-    );
-  debugger;
-  return pages.map((page) => page[":node/title"]);
-
 }
 
 const postGraph = async () => {
