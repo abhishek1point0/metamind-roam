@@ -35,47 +35,65 @@ export const createIndexPage = () => {
     });
 };
 
-export const createUpdateLogPage = () => {
+const createBlocks = (pageUid: string, renamedPage: any, modifiedPage: any, newPages: any) => {
+  Promise.all([
+    createBlock({ node: { text: "Renamed Pages" }, parentUid: pageUid, order: 1})
+  ]).then((data) => {
+    let blockUid = data[0];
+    renamedPage.forEach((ele: string, index: number) => {
+      createBlock({ node: { text: `[[${ele}]]` }, parentUid: blockUid, order: index + 1 });
+    })
+  });
+  Promise.all([
+    createBlock({ node: { text: "Modified Pages" }, parentUid: pageUid, order: 2})
+  ]).then((data) => {
+    let blockUid = data[0];
+    modifiedPage.forEach((ele: string, index: number) => {
+      createBlock({ node: { text: `[[${ele}]]` }, parentUid: blockUid, order: index + 1 });
+    })
+  });
+  Promise.all([
+    createBlock({ node: { text: "New Pages" }, parentUid: pageUid, order: 3  })
+  ]).then((data) => {
+    let blockUid = data[0];
+    newPages.forEach((ele: string, index: number) => {
+      createBlock({ node: { text: `[[${ele}]]` }, parentUid: blockUid, order: index + 1 });
+    })
+  });
+}
+
+export const createUpdateLogPage = (lastRun: number) => {
   const graphName = window.roamAlphaAPI.graph.name;
   const pageTitle = `Update Logs for ${graphName}`;
 
   // Order of the page changes to show.
-  let newPages = getDateFilteredPages(1685278785000);
-  let modifiedPage = getModifiedPage(1685278785000);
-  let renamedPage = getRenamedPage(1685278785000);
+  let newPages = getDateFilteredPages(lastRun);
+  let modifiedPage = getModifiedPage(lastRun);
+  let renamedPage = getRenamedPage(lastRun);
 
-// Making sure to remove the duplicated pages.
+  // Making sure to remove the duplicated pages.
   newPages = _.without(newPages, pageTitle, "Index Page");
-  modifiedPage = _.without(modifiedPage, "Index Page",...newPages);
-  renamedPage = _.without(renamedPage, "Index Page",...modifiedPage);
+  modifiedPage = _.without(modifiedPage, pageTitle, "Index Page",...newPages);
+  renamedPage = _.without(renamedPage, pageTitle, "Index Page",...modifiedPage);
 
   Promise.all([createPage({ title: pageTitle, })]).then(
     (data) => {
-      const pageUide = data[0];
-      Promise.all([
-        createBlock({ node: { text: "Renamed Pages" }, parentUid: pageUide, order: 1})
-      ]).then((data) => {
-        let blockUid = data[0];
-        renamedPage.forEach((ele, index) => {
-          createBlock({ node: { text: `[[${ele}]]` }, parentUid: blockUid, order: index + 1 });
-        })
+      const pageUid = data[0];
+      createBlocks(pageUid, renamedPage, modifiedPage, newPages);
+    }).catch((e) => {
+      const pageUid = getPageUidByPageTitle(pageTitle);
+      const indexBlocks = getBasicTreeByParentUid(pageUid);
+      let deletedBlocks: Promise<string | number>[] = [];
+      indexBlocks.forEach((block) => {
+        deletedBlocks.push(deleteBlock(block.uid));
       });
-      Promise.all([
-        createBlock({ node: { text: "Modified Pages" }, parentUid: pageUide, order: 2})
-      ]).then((data) => {
-        let blockUid = data[0];
-        modifiedPage.forEach((ele, index) => {
-          createBlock({ node: { text: `[[${ele}]]` }, parentUid: blockUid, order: index + 1 });
-        })
+      Promise.all(deletedBlocks).then((data) => {
+        renderToast({
+          content: "Regenerating the log page!",
+          intent: "warning",
+          id: "roam-js-graphgator-log-page"
+        });
+        createBlocks(pageUid, renamedPage, modifiedPage, newPages);
       });
-      Promise.all([
-        createBlock({ node: { text: "New Pages" }, parentUid: pageUide, order: 3  })
-      ]).then((data) => {
-        let blockUid = data[0];
-        newPages.forEach((ele, index) => {
-          createBlock({ node: { text: `[[${ele}]]` }, parentUid: blockUid, order: index + 1 });
-        })
-      });
-    })
-
+    });
 }

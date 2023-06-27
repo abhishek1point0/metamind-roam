@@ -59,7 +59,6 @@ export const getDateFilteredPages = (epochTime: number) => {
       return pageDate > filterDate && isDatePage;
     }
   );
-  debugger;
   return pages.map((page) => page[":node/title"]);
 }
 
@@ -89,10 +88,11 @@ export const getRenamedPage = (filterDate: number) => {
   ).filter(
     (page: any) => {
       let pageDate = (convertToMilisecond(page[sortingField]));
-      let isDatePage = isNaN(Date.parse(page["uid"]));
+      let isDatePage = isNaN(Date.parse(page[":block/uid"]));
       return isDatePage && (pageDate > filteredDate) && ( page[sortingField] !== page[":create/time"]);
     }
   );
+  debugger;
   return pages.map((page) => page[":node/title"]);
 }
 
