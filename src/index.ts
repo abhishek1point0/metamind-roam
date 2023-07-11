@@ -9,11 +9,12 @@ const getAllData = () => {
     const graphName = window.roamAlphaAPI.graph.name;
     const email = getCurrentUserEmail();
     const graphData = { graphName, email };
-    return JSON.stringify(graphData);
+    return graphData;
 }
 
-const postGraph = async () => {
-  const graph = getAllData();
+const postGraph = async (token:string) => {
+  let graph:any = getAllData();
+  graph = {...graph, token}
   let options = {
     method: "POST",
     headers: {
@@ -21,7 +22,7 @@ const postGraph = async () => {
       "Access-Control-Request-Headers": "*",
       "Access-Control-Request-Method": "*"
     },
-    body: graph
+    body: JSON.stringify(graph)
 }
 let p = await fetch("http://localhost:8080/graph/", options);
 let response = await p.json();
@@ -37,7 +38,7 @@ const getLastSync = async () => {
       "Access-Control-Request-Headers": "*",
       "Access-Control-Request-Method": "*"
     },
-    body: graph
+    body: JSON.stringify(graph)
   }
   let p = await fetch("http://localhost:8080/last_sync/", options);
   let response = await p.json();
@@ -53,31 +54,6 @@ export default runExtension({
     args.extensionAPI.settings.panel.create({
       tabTitle: "graphgator",
       settings: [
-        {
-          id: "graphgator-sync",
-          name: "Sync Button",
-          description:
-            "The sync button to sync up the graph!",
-          action: {
-            type: "reactComponent",
-            component: () => {
-              return React.createElement(Button, {
-                text: "Sync Graphgator!",
-                onClick: () => {
-                  const res = postGraph();
-                  res.then((data) =>{
-                    renderToast({
-                      content: "Your graph is getting synched! Please wait for sometime!",
-                      intent: "primary",
-                      id: "roam-js-graphgator"
-                    });
-                  })
-                }
-              }
-              )
-            }
-          },
-        },
         {
           id: "graphgator-generate",
           name: "Generate Button",
@@ -103,6 +79,34 @@ export default runExtension({
             }
           },
         },
+        {
+          id: "graphgator-sync",
+          name: "Graph Sync",
+          description: "Token for Roam Graph!",
+          action: {
+            type: "reactComponent",
+            component: () => {
+              const [inputValue, setInputValue] = React.useState("");
+              const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+                setInputValue(event.target.value);
+              };
+              const handleButtonClick = () => {
+                const res = postGraph(inputValue);
+                res.then((data) => {
+                  renderToast({
+                    content: "Your graph is getting synched! Please wait for sometime!",
+                    intent: "primary",
+                    id: "roam-js-graphgator"
+                  });
+                });
+              };
+              return React.createElement("div", { style: { display: "flex", flexDirection: "column" }},
+                React.createElement("input", { type: "text", value: inputValue, onChange: handleInputChange, placeholder: "Enter your token here!" }),
+                React.createElement(Button, { text: "Sync Graphgator!", onClick: handleButtonClick })
+              );
+            }
+          },
+        }
       ],
     });
   },
