@@ -29,9 +29,9 @@ const generatePagesFromBlock = (blocks:any, numberOfPages: number) => {
 }
 
 /**
- * This functions queries all pages of the database and sorts them in reverse
- * chronological order.
-*/
+ * This function returns a list of pages sorted in reverse chronological order based on the last time they were edited.
+ * @returns List of pages sorted in reverse chronological order based on the last time they were edited.
+ */
 export const getReverseChronoSortPages = () => {
     let sortingField = ":edit/time";
     let pages = window.roamAlphaAPI.q('[ :find ?e :where [?e :node/title] ] ').map(
@@ -47,6 +47,11 @@ export const getReverseChronoSortPages = () => {
 
 };
 
+/**
+ * This function returns a list of pages which are created after the filter Date.
+ * @param epochTime Epoch time to filter the pages from.
+ * @returns List of pages
+ */
 export const getDateFilteredPages = (epochTime: number) => {
   let sortingField = ":create/time";
   let pages = window.roamAlphaAPI.q('[ :find ?e :where [?e :node/title] ] ').map(
@@ -80,6 +85,12 @@ export const getRecentEditedPages = () => {
   return pages;
 }
 
+
+/**
+ * This function returns a list of pages which are renamed after the filter Date.
+ * @param filterDate Epoch time to filter the pages from.
+ * @returns List of pages
+ */
 export const getRenamedPage = (filterDate: number) => {
   let sortingField = ":edit/time";
   let filteredDate = (convertToMilisecond(filterDate));

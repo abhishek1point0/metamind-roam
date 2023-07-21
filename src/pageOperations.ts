@@ -62,24 +62,31 @@ const createBlocks = (pageUid: string, renamedPage: any, modifiedPage: any, newP
   });
 }
 
-export const createUpdateLogPage = (lastRun: number) => {
+export const createUpdateLogPage = (lastRunSeconds: number) => {
   const graphName = window.roamAlphaAPI.graph.name;
   const pageTitle = `Update Logs for ${graphName}`;
-
-  // Order of the page changes to show.
-  let newPages = getDateFilteredPages(lastRun);
-  let modifiedPage = getModifiedPage(lastRun);
-  let renamedPage = getRenamedPage(lastRun);
-
-  // Making sure to remove the duplicated pages.
+  let modifiedPages: any = [];
+  let renamedPages: any = [];
+  let lastRunMiliSeconds = lastRunSeconds * 1000;
+  let newPages = getDateFilteredPages(lastRunMiliSeconds);
   newPages = _.without(newPages, pageTitle, "Index Page");
-  modifiedPage = _.without(modifiedPage, pageTitle, "Index Page",...newPages);
-  renamedPage = _.without(renamedPage, pageTitle, "Index Page",...modifiedPage);
+
+  // If the last run is 1, then it means that the page is being created for the first time.
+  // Hence, all pages are new pages.
+  if (lastRunMiliSeconds !== 1) {
+    // Order of the page changes to show.
+    modifiedPages = getModifiedPage(lastRunMiliSeconds);
+    renamedPages = getRenamedPage(lastRunMiliSeconds);
+
+    // Making sure to remove the duplicated pages.
+    modifiedPages = _.without(modifiedPages, pageTitle, "Index Page",...newPages);
+    renamedPages = _.without(renamedPages, pageTitle, "Index Page",...modifiedPages);
+  }
 
   Promise.all([createPage({ title: pageTitle, })]).then(
     (data) => {
       const pageUid = data[0];
-      createBlocks(pageUid, renamedPage, modifiedPage, newPages);
+      createBlocks(pageUid, newPages, modifiedPages, renamedPages);
     }).catch((e) => {
       const pageUid = getPageUidByPageTitle(pageTitle);
       const indexBlocks = getBasicTreeByParentUid(pageUid);
@@ -93,7 +100,7 @@ export const createUpdateLogPage = (lastRun: number) => {
           intent: "warning",
           id: "roam-js-graphgator-log-page"
         });
-        createBlocks(pageUid, renamedPage, modifiedPage, newPages);
+        createBlocks(pageUid, renamedPages, modifiedPages, newPages);
       });
     });
 }
