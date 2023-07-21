@@ -24,7 +24,7 @@ const postGraph = async (token:string) => {
     },
     body: JSON.stringify(graph)
 }
-let p = await fetch("http://localhost:8080/graph/", options);
+let p = await fetch("https://stg.metamind.network/graph/", options);
 let response = await p.json();
 return response;
 }
@@ -40,7 +40,7 @@ const getLastSync = async () => {
     },
     body: JSON.stringify(graph)
   }
-  let p = await fetch("http://localhost:8080/last_sync/", options);
+  let p = await fetch("https://stg.metamind.network/last_sync/", options);
   let response = await p.json();
   const lastRun = response["last_run"];
   createIndexPage();

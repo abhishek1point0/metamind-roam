@@ -103,7 +103,6 @@ export const getRenamedPage = (filterDate: number) => {
       return isDatePage && (pageDate > filteredDate) && ( page[sortingField] !== page[":create/time"]);
     }
   );
-  debugger;
   return pages.map((page) => page[":node/title"]);
 }
 
