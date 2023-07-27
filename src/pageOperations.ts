@@ -80,7 +80,7 @@ export const createUpdateLogPage = (lastRunSeconds: number) => {
 
     // Making sure to remove the duplicated pages.
     modifiedPages = _.without(modifiedPages, pageTitle, "Index Page",...newPages);
-    renamedPages = _.without(renamedPages, pageTitle, "Index Page",...modifiedPages);
+    renamedPages = _.without(renamedPages, pageTitle, "Index Page",...modifiedPages, ...newPages);
   }
 
   Promise.all([createPage({ title: pageTitle, })]).then(
