@@ -86,7 +86,7 @@ export const createUpdateLogPage = (lastRunSeconds: number) => {
   Promise.all([createPage({ title: pageTitle, })]).then(
     (data) => {
       const pageUid = data[0];
-      createBlocks(pageUid, newPages, modifiedPages, renamedPages);
+      createBlocks(pageUid, renamedPages, modifiedPages, newPages);
     }).catch((e) => {
       const pageUid = getPageUidByPageTitle(pageTitle);
       const indexBlocks = getBasicTreeByParentUid(pageUid);
