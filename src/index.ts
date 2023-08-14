@@ -6,6 +6,7 @@ import getCurrentUserDisplayName from "roamjs-components/queries/getCurrentUserD
 import renderToast from "roamjs-components/components/Toast";
 import { createIndexPage, createUpdateLogPage } from "./pageOperations";
 
+// Get all the required data from Roam and return it as a JSON.
 const getAllData = () => {
     const graphName = window.roamAlphaAPI.graph.name;
     const email = getCurrentUserEmail();
@@ -14,6 +15,8 @@ const getAllData = () => {
     return graphData;
 }
 
+// Post the graph data to the server so that the server can sync the graph
+// and be ready to publish it.
 const postGraph = async (token:string, description: string) => {
   let graph:any = getAllData();
   graph = {...graph, token, description}
@@ -31,7 +34,8 @@ let response = await p.json();
 return response;
 }
 
-const getLastSync = async () => {
+// Generate the Index and Log Page for the Roam Graph.
+const generatePages = async () => {
   const graph = getAllData();
   let options = {
     method: "POST",
@@ -65,9 +69,9 @@ export default runExtension({
             type: "reactComponent",
             component: () => {
               return React.createElement(Button, {
-                text: "Generate Pages",
+                text: "Generate Updates",
                 onClick: () => {
-                  const res = getLastSync();
+                  const res = generatePages();
                   res.then((data) =>{
                     renderToast({
                       content: "Pages are being generated!",
@@ -83,7 +87,7 @@ export default runExtension({
         },
         {
           id: "graphgator-sync",
-          name: "Graph Sync",
+          name: "Publish Graph",
           description: "Token for Roam Graph!",
           action: {
             type: "reactComponent",
@@ -120,7 +124,7 @@ export default runExtension({
               return React.createElement("div", { style: { display: "flex", flexDirection: "column" }},
                 React.createElement("input", { type: "text", value: tokenValue, onChange: handleTokenChange, placeholder: "Enter your token here!" }),
                 React.createElement("input", { type: "text", value: graphDescription, onChange: handleDescriptionChange, placeholder: "Enter Graph description here!" }),
-                React.createElement(Button, { text: "Sync Graphgator!", onClick: handleButtonClick })
+                React.createElement(Button, { text: "Publish Graph", onClick: handleButtonClick })
               );
             }
           },
