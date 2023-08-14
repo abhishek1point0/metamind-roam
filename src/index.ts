@@ -112,7 +112,7 @@ export default runExtension({
               const handleButtonClick = () => {
                 const res = postGraph(tokenValue, graphDescription);
                 localStorage.setItem('graphDescription', JSON.stringify(graphDescription));
-                localStorage.setItem('graphToken', JSON.stringify(graphDescription));
+                localStorage.setItem('graphToken', JSON.stringify(tokenValue));
                 res.then((data) => {
                   renderToast({
                     content: "Your graph is getting synced! Please wait for sometime!",
