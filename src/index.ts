@@ -2,19 +2,21 @@ import runExtension from "roamjs-components/util/runExtension";
 import React from "react";
 import { Button } from "@blueprintjs/core";
 import getCurrentUserEmail from "roamjs-components/queries/getCurrentUserEmail";
+import getCurrentUserDisplayName from "roamjs-components/queries/getCurrentUserDisplayName";
 import renderToast from "roamjs-components/components/Toast";
 import { createIndexPage, createUpdateLogPage } from "./pageOperations";
 
 const getAllData = () => {
     const graphName = window.roamAlphaAPI.graph.name;
     const email = getCurrentUserEmail();
-    const graphData = { graphName, email };
+    const fullName = getCurrentUserDisplayName();
+    const graphData = { graphName, email, fullName };
     return graphData;
 }
 
-const postGraph = async (token:string) => {
+const postGraph = async (token:string, description: string) => {
   let graph:any = getAllData();
-  graph = {...graph, token}
+  graph = {...graph, token, description}
   let options = {
     method: "POST",
     headers: {
@@ -58,7 +60,7 @@ export default runExtension({
           id: "graphgator-generate",
           name: "Generate Button",
           description:
-            "The generate button to generate the log and index page!",
+            "The button to generate the log and index page!",
           action: {
             type: "reactComponent",
             component: () => {
@@ -68,7 +70,7 @@ export default runExtension({
                   const res = getLastSync();
                   res.then((data) =>{
                     renderToast({
-                      content: "Your graph is getting synched! Please wait for sometime!",
+                      content: "Pages are being generated!",
                       intent: "primary",
                       id: "roam-js-graphgator"
                     });
@@ -86,22 +88,38 @@ export default runExtension({
           action: {
             type: "reactComponent",
             component: () => {
-              const [inputValue, setInputValue] = React.useState("");
-              const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-                setInputValue(event.target.value);
+              const [tokenValue, setTokenValue] = React.useState("");
+              const [graphDescription, setGraphDescription] = React.useState("");
+              React.useEffect(() => {
+                const description = JSON.parse(localStorage.getItem('graphDescription'));
+                const token = JSON.parse(localStorage.getItem('graphToken'));
+                if (description) {
+                  setGraphDescription(description);
+                  setTokenValue(token);
+                }
+              }, []);
+
+              const handleTokenChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+                setTokenValue(event.target.value);
+              };
+              const handleDescriptionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+                setGraphDescription(event.target.value);
               };
               const handleButtonClick = () => {
-                const res = postGraph(inputValue);
+                const res = postGraph(tokenValue, graphDescription);
+                localStorage.setItem('graphDescription', JSON.stringify(graphDescription));
+                localStorage.setItem('graphToken', JSON.stringify(graphDescription));
                 res.then((data) => {
                   renderToast({
-                    content: "Your graph is getting synched! Please wait for sometime!",
+                    content: "Your graph is getting synced! Please wait for sometime!",
                     intent: "primary",
                     id: "roam-js-graphgator"
                   });
                 });
               };
               return React.createElement("div", { style: { display: "flex", flexDirection: "column" }},
-                React.createElement("input", { type: "text", value: inputValue, onChange: handleInputChange, placeholder: "Enter your token here!" }),
+                React.createElement("input", { type: "text", value: tokenValue, onChange: handleTokenChange, placeholder: "Enter your token here!" }),
+                React.createElement("input", { type: "text", value: graphDescription, onChange: handleDescriptionChange, placeholder: "Enter Graph description here!" }),
                 React.createElement(Button, { text: "Sync Graphgator!", onClick: handleButtonClick })
               );
             }
