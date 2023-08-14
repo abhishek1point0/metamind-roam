@@ -37,7 +37,7 @@ export const createIndexPage = () => {
 
 const createBlocks = (pageUid: string, renamedPage: any, modifiedPage: any, newPages: any) => {
   Promise.all([
-    createBlock({ node: { text: "Renamed Pages" }, parentUid: pageUid, order: 1})
+    createBlock({ node: { text: "**Renamed Pages**", heading: 2 }, parentUid: pageUid, order: 1})
   ]).then((data) => {
     let blockUid = data[0];
     renamedPage.forEach((ele: string, index: number) => {
@@ -45,7 +45,7 @@ const createBlocks = (pageUid: string, renamedPage: any, modifiedPage: any, newP
     })
   });
   Promise.all([
-    createBlock({ node: { text: "Modified Pages" }, parentUid: pageUid, order: 2})
+    createBlock({ node: { text: "**Modified Pages**", heading: 2 }, parentUid: pageUid, order: 2})
   ]).then((data) => {
     let blockUid = data[0];
     modifiedPage.forEach((ele: string, index: number) => {
@@ -53,7 +53,7 @@ const createBlocks = (pageUid: string, renamedPage: any, modifiedPage: any, newP
     })
   });
   Promise.all([
-    createBlock({ node: { text: "New Pages" }, parentUid: pageUid, order: 3  })
+    createBlock({ node: { text: "**New Pages**", heading: 2 }, parentUid: pageUid, order: 3  })
   ]).then((data) => {
     let blockUid = data[0];
     newPages.forEach((ele: string, index: number) => {
