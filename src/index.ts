@@ -95,8 +95,9 @@ export default runExtension({
               const [tokenValue, setTokenValue] = React.useState("");
               const [graphDescription, setGraphDescription] = React.useState("");
               React.useEffect(() => {
-                const description = JSON.parse(localStorage.getItem('graphDescription'));
-                const token = JSON.parse(localStorage.getItem('graphToken'));
+                const graphName = window.roamAlphaAPI.graph.name;
+                const description = JSON.parse(localStorage.getItem(`${graphName}_graphDescription`));
+                const token = JSON.parse(localStorage.getItem(`${graphName}_graphToken`));
                 if (description) {
                   setGraphDescription(description);
                   setTokenValue(token);
@@ -111,8 +112,9 @@ export default runExtension({
               };
               const handleButtonClick = () => {
                 const res = postGraph(tokenValue, graphDescription);
-                localStorage.setItem('graphDescription', JSON.stringify(graphDescription));
-                localStorage.setItem('graphToken', JSON.stringify(tokenValue));
+                const graphName = window.roamAlphaAPI.graph.name;
+                localStorage.setItem(`${graphName}_graphDescription`, JSON.stringify(graphDescription));
+                localStorage.setItem(`${graphName}_graphToken`, JSON.stringify(tokenValue));
                 res.then((data) => {
                   renderToast({
                     content: "Your graph is getting synced! Please wait for sometime!",
