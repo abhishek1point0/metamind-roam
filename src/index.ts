@@ -29,13 +29,13 @@ const postGraph = async (token:string, description: string) => {
     },
     body: JSON.stringify(graph)
 }
-let p = await fetch("https://stg.metamind.network/graph/", options);
-let response = await p.json();
-return response;
+let response = await fetch("https://prod.metamind.network/graph/", options);
+let responseJSON = await response.json();
+return responseJSON;
 }
 
 // Generate the Index and Log Page for the Roam Graph.
-const generatePages = async () => {
+const generatePages = async (createIndexPageFlag: boolean) => {
   const graph = getAllData();
   let options = {
     method: "POST",
@@ -46,12 +46,13 @@ const generatePages = async () => {
     },
     body: JSON.stringify(graph)
   }
-  let p = await fetch("https://stg.metamind.network/last_sync/", options);
-  let response = await p.json();
+  let res = await fetch("https://prod.metamind.network/last_sync/", options);
+  let response = await res.json();
   const lastRun = response["last_run"];
-  createIndexPage();
+  if (createIndexPageFlag) {
+    createIndexPage();
+  }
   createUpdateLogPage(lastRun);
-  console.log(response)
   return response;
 }
 
@@ -68,19 +69,36 @@ export default runExtension({
           action: {
             type: "reactComponent",
             component: () => {
-              return React.createElement(Button, {
-                text: "Generate Updates",
-                onClick: () => {
-                  const res = generatePages();
-                  res.then((data) =>{
-                    renderToast({
-                      content: "Pages are being generated!",
-                      intent: "primary",
-                      id: "roam-js-graphgator"
-                    });
-                  })
-                }
+              const [isToggled, setIsToggled] = React.useState(false);
+              React.useEffect(() => {
+                const graphName = window.roamAlphaAPI.graph.name;
+                const indexPage = JSON.parse(localStorage.getItem(`${graphName}_indexPage`));
+                setIsToggled(indexPage);
+              }, []);
+
+              const handleToggle = () => {
+                const graphName = window.roamAlphaAPI.graph.name;
+                localStorage.setItem(`${graphName}_indexPage`, JSON.stringify(isToggled));
+                setIsToggled(!isToggled);
               }
+
+              const generatePage = () => {
+                const res = generatePages(isToggled);
+                res.then((data) =>{
+                  renderToast({
+                    content: "Pages are being generated!",
+                    intent: "primary",
+                    id: "roam-js-graphgator"
+                  });
+                })
+              }
+
+              return React.createElement("div", { style: { display: "flex", flexDirection: "column" }},
+              React.createElement(Button,{ text: "Generate Updates", onClick: generatePage, style: { color: "#0F60BD"}}),
+              React.createElement("div", { style: { padding: "2rem" }},
+              React.createElement("p", null, "Click the toggle button to enable/disable Index Page Generation!"),
+              React.createElement("input", { type: "checkbox", checked: isToggled, onChange: handleToggle }),
+              React.createElement("label", { style: { padding: "0.5rem" }}, "Manage index page update manually!")),
               )
             }
           },
@@ -107,9 +125,11 @@ export default runExtension({
               const handleTokenChange = (event: React.ChangeEvent<HTMLInputElement>) => {
                 setTokenValue(event.target.value);
               };
+
               const handleDescriptionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
                 setGraphDescription(event.target.value);
               };
+
               const handleButtonClick = () => {
                 const res = postGraph(tokenValue, graphDescription);
                 const graphName = window.roamAlphaAPI.graph.name;
@@ -126,7 +146,7 @@ export default runExtension({
               return React.createElement("div", { style: { display: "flex", flexDirection: "column" }},
                 React.createElement("input", { type: "text", value: tokenValue, onChange: handleTokenChange, placeholder: "Enter your token here!" }),
                 React.createElement("input", { type: "text", value: graphDescription, onChange: handleDescriptionChange, placeholder: "Enter Graph description here!" }),
-                React.createElement(Button, { text: "Publish Graph", onClick: handleButtonClick })
+                React.createElement(Button, { text: "Publish Graph", onClick: handleButtonClick }),
               );
             }
           },
