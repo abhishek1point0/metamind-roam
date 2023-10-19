@@ -63,9 +63,10 @@ export default runExtension({
       settings: [
         {
           id: "graphgator-generate",
-          name: "Generate Button",
+          name: "STEP 1/2 : Generate Update Log since Last Sync",
           description:
-            "The button to generate the log and index page!",
+            "Update Log is new changes made to the graph since last sync. \
+            If it's first time, the update log and the index page will beidentical.",
           action: {
             type: "reactComponent",
             component: () => {
@@ -94,19 +95,33 @@ export default runExtension({
               }
 
               return React.createElement("div", { style: { display: "flex", flexDirection: "column" }},
-              React.createElement(Button,{ text: "Generate Updates", onClick: generatePage, style: { color: "#0F60BD"}}),
-              React.createElement("div", { style: { padding: "2rem" }},
-              React.createElement("p", null, "Click the toggle button to enable/disable Index Page Generation!"),
-              React.createElement("input", { type: "checkbox", checked: isToggled, onChange: handleToggle }),
-              React.createElement("label", { style: { padding: "0.5rem" }}, "Manage index page update manually!")),
+                React.createElement(Button, {
+                  text: "Generate New Update Log and Index Page",
+                  onClick: generatePage,
+                  style: { color: "#FFFFFF", fontWeight: "bold",  borderRadius: "0.5rem"}
+                }),
+                React.createElement("div", {
+                  style: { padding: "2rem" }},
+                  React.createElement("input", {
+                    type: "checkbox",
+                    checked: isToggled,
+                    onChange: handleToggle,
+                    style: { padding: "0.5rem" }
+                  }),
+                  React.createElement("label", {
+                    style: { padding: "0.5rem", fontWeight: "bold" }},
+                    "Manually create Index Page for your Graph"
+                  )
+                ),
               )
             }
           },
         },
         {
           id: "graphgator-sync",
-          name: "Publish Graph",
-          description: "Token for Roam Graph!",
+          name: "STEP 2/2 : Sync and Publish Graph",
+          description: "After creating a new update log, sync the graph in it's current state.We will remember this, \
+          the next time you have made updates to your graphand want a change log.",
           action: {
             type: "reactComponent",
             component: () => {
@@ -144,9 +159,38 @@ export default runExtension({
                 });
               };
               return React.createElement("div", { style: { display: "flex", flexDirection: "column" }},
-                React.createElement("input", { type: "text", value: tokenValue, onChange: handleTokenChange, placeholder: "Enter your token here!" }),
-                React.createElement("input", { type: "text", value: graphDescription, onChange: handleDescriptionChange, placeholder: "Enter Graph description here!" }),
-                React.createElement(Button, { text: "Publish Graph", onClick: handleButtonClick }),
+                React.createElement("input", {
+                  type: "text",
+                  value: tokenValue,
+                  onChange: handleTokenChange,
+                  placeholder: "Enter your API Token (in Graph tab)",
+                  style: { padding: "0.5rem", borderRadius: "0.5rem", marginBottom: "0.5rem"}
+                }),
+                React.createElement("input", {
+                  type: "text",
+                  value: graphDescription,
+                  onChange: handleDescriptionChange,
+                  placeholder: "Enter a Description for your Graph (optional)",
+                  style: { padding: "0.5rem", borderRadius: "0.5rem", marginBottom: "0.5rem"}
+                }),
+                React.createElement(Button, {
+                  text: "Sync Graph with Metamind Servers",
+                  onClick: handleButtonClick,
+                  style: { color: "#FFFFFF", fontWeight: "bold"}
+                }),
+                React.createElement("div", {
+                  style: { padding: "2rem", display: "flex", flexDirection: "row" }},
+                  React.createElement("input", {
+                    type: "checkbox",
+                    checked: false,
+                    disabled: true,
+                    style: { padding: "0.5rem",}
+                  }),
+                  React.createElement("label", {
+                    style: { paddingLeft: "0.5rem", fontWeight: "bold" }},
+                    "Publish to the Metamind App (Coming Soon!)"
+                  )
+                ),
               );
             }
           },
