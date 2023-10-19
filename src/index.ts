@@ -6,6 +6,8 @@ import getCurrentUserDisplayName from "roamjs-components/queries/getCurrentUserD
 import renderToast from "roamjs-components/components/Toast";
 import { createIndexPage, createUpdateLogPage } from "./pageOperations";
 
+const SERVER_URL = "https://prod.metamind.network";
+
 // Get all the required data from Roam and return it as a JSON.
 const getAllData = () => {
     const graphName = window.roamAlphaAPI.graph.name;
@@ -29,7 +31,7 @@ const postGraph = async (token:string, description: string) => {
     },
     body: JSON.stringify(graph)
 }
-let response = await fetch("https://prod.metamind.network/graph/", options);
+let response = await fetch(`${SERVER_URL}/graph/`, options);
 let responseJSON = await response.json();
 return responseJSON;
 }
@@ -46,13 +48,14 @@ const generatePages = async (createIndexPageFlag: boolean) => {
     },
     body: JSON.stringify(graph)
   }
-  let res = await fetch("https://prod.metamind.network/last_sync/", options);
+  let res = await fetch(`${SERVER_URL}/last_sync/`, options);
   let response = await res.json();
   const lastRun = response["last_run"];
+  const numberOfSync = response["number_of_sync"]+1;
   if (createIndexPageFlag) {
     createIndexPage();
   }
-  createUpdateLogPage(lastRun);
+  createUpdateLogPage(lastRun, numberOfSync);
   return response;
 }
 

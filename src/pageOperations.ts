@@ -1,6 +1,7 @@
 import _ from "lodash";
 import getPageUidByPageTitle from "roamjs-components/queries/getPageUidByPageTitle";
 import getBasicTreeByParentUid from "roamjs-components/queries/getBasicTreeByParentUid";
+import getBlockUidByTextOnPage from "roamjs-components/queries/getBlockUidByTextOnPage";
 import { createPage, createBlock, deleteBlock } from "roamjs-components/writes";
 import renderToast from "roamjs-components/components/Toast";
 import { getRenamedPage, getRecentEditedPages, getModifiedPage, getDateFilteredPages } from "./utils";
@@ -62,9 +63,8 @@ const createBlocks = (pageUid: string, renamedPage: any, modifiedPage: any, newP
   });
 }
 
-export const createUpdateLogPage = (lastRunSeconds: number) => {
-  const graphName = window.roamAlphaAPI.graph.name;
-  const pageTitle = `Update Logs for ${graphName}`;
+export const createUpdateLogPage = (lastRunSeconds: number, numberOfSync: number) => {
+  const pageTitle = `Update No. #${numberOfSync}`;
   let modifiedPages: any = [];
   let renamedPages: any = [];
   let lastRunMiliSeconds = lastRunSeconds * 1000;
@@ -96,11 +96,39 @@ export const createUpdateLogPage = (lastRunSeconds: number) => {
       });
       Promise.all(deletedBlocks).then((data) => {
         renderToast({
-          content: "Regenerating the log page!",
+          content: `Regenerating the Update Log for ${pageTitle}`,
           intent: "warning",
           id: "roam-js-graphgator-log-page"
         });
         createBlocks(pageUid, renamedPages, modifiedPages, newPages);
       });
     });
+
+  generateUpdateLogIndexPage(pageTitle)
+}
+
+export const generateUpdateLogIndexPage = (updatePageTitle: string) => {
+  const graphName = window.roamAlphaAPI.graph.name;
+  const pageTitle = `Update Logs / ${graphName}`;
+  const pageUid = getPageUidByPageTitle(pageTitle);
+  if (pageUid === "") {
+    Promise.all([createPage({ title: pageTitle, })]).then(
+      (data) => {
+        const pageUid = data[0];
+        createUpdateLogBlock(updatePageTitle, pageTitle, pageUid);
+      }
+    )
+  }
+  else {
+    createUpdateLogBlock(updatePageTitle, pageTitle, pageUid);
+  }
+}
+
+function createUpdateLogBlock(updatePageTitle: string, pageTitle: string, pageUid: string) {
+  const blockText = `[[${updatePageTitle}]]\n**Title** :\n**Date** : [[${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: '2-digit' })}]]`;
+  const blockUid = getBlockUidByTextOnPage({ text: blockText, title: pageTitle });
+  if (blockUid !== "") {
+    Promise.all([deleteBlock(blockUid)]);
+  }
+  createBlock({ node: { text: blockText }, parentUid: pageUid });
 }
