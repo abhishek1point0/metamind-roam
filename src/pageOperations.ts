@@ -6,34 +6,40 @@ import { createPage, createBlock, deleteBlock } from "roamjs-components/writes";
 import renderToast from "roamjs-components/components/Toast";
 import { getRenamedPage, getRecentEditedPages, getModifiedPage, getDateFilteredPages } from "./utils";
 
-export const createIndexPage = () => {
+export const createIndexPage = (createIndexPageIsManual: boolean) => {
   const indexPageName = "Index Page";
   let allPages = getRecentEditedPages();
   allPages = _.without(allPages, indexPageName);
-  Promise.all([createPage({ title: indexPageName, })]).then(
-    (data) => {
-      const pageUide = data[0];
-      allPages.forEach((ele: any, i: any) => {
-        createBlock({ node: { text: `[[${ele}]]` }, parentUid: pageUide, order: i + 1 });
-      });
-    }).catch((e) => {
-      const pageUid = getPageUidByPageTitle(indexPageName);
-      const indexBlocks = getBasicTreeByParentUid(pageUid);
-      let deletedBlocks: Promise<string | number>[] = [];
-      indexBlocks.forEach((block) => {
-        deletedBlocks.push(deleteBlock(block.uid));
-      });
-      Promise.all(deletedBlocks).then((data) => {
-        renderToast({
-          content: "Regenerating the index page!",
-          intent: "warning",
-          id: "roam-js-graphgator-index-page"
+  const pageUid = getPageUidByPageTitle(indexPageName);
+  if (pageUid === "" && createIndexPageIsManual) {
+    Promise.all([createPage({ title: indexPageName, })]);
+  }
+  if (!createIndexPageIsManual) {
+    Promise.all([createPage({ title: indexPageName, })]).then(
+      (data) => {
+        const pageUide = data[0];
+        allPages.forEach((ele: any, i: any) => {
+          createBlock({ node: { text: `[[${ele}]]` }, parentUid: pageUide, order: i + 1 });
         });
-        allPages.forEach((ele, i) => {
-          createBlock({ node: { text: `[[${ele}]]` }, parentUid: pageUid, order: i + 1 });
+      }).catch((e) => {
+        const pageUid = getPageUidByPageTitle(indexPageName);
+        const indexBlocks = getBasicTreeByParentUid(pageUid);
+        let deletedBlocks: Promise<string | number>[] = [];
+        indexBlocks.forEach((block) => {
+          deletedBlocks.push(deleteBlock(block.uid));
+        });
+        Promise.all(deletedBlocks).then((data) => {
+          renderToast({
+            content: "Regenerating the index page!",
+            intent: "warning",
+            id: "roam-js-graphgator-index-page"
+          });
+          allPages.forEach((ele, i) => {
+            createBlock({ node: { text: `[[${ele}]]` }, parentUid: pageUid, order: i + 1 });
+          });
         });
       });
-    });
+  }
 };
 
 const createBlocks = (pageUid: string, renamedPage: any, modifiedPage: any, newPages: any) => {

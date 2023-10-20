@@ -52,9 +52,7 @@ const generatePages = async (createIndexPageFlag: boolean) => {
   let response = await res.json();
   const lastRun = response["last_run"];
   const numberOfSync = response["number_of_sync"]+1;
-  if (createIndexPageFlag) {
-    createIndexPage();
-  }
+  createIndexPage(createIndexPageFlag);
   createUpdateLogPage(lastRun, numberOfSync);
   return response;
 }
@@ -76,7 +74,7 @@ export default runExtension({
               const [isToggled, setIsToggled] = React.useState(false);
               React.useEffect(() => {
                 const graphName = window.roamAlphaAPI.graph.name;
-                const indexPage = JSON.parse(localStorage.getItem(`${graphName}_indexPage`));
+                const indexPage = JSON.parse(localStorage.getItem(`${graphName}_indexPage`)) || false;
                 setIsToggled(indexPage);
               }, []);
 
