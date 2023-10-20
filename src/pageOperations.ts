@@ -7,7 +7,8 @@ import renderToast from "roamjs-components/components/Toast";
 import { getRenamedPage, getRecentEditedPages, getModifiedPage, getDateFilteredPages } from "./utils";
 
 export const createIndexPage = (createIndexPageIsManual: boolean) => {
-  const indexPageName = "Index Page";
+  const graphName = window.roamAlphaAPI.graph.name;
+  const indexPageName = `Index Page / ${graphName}`;
   let allPages = getRecentEditedPages();
   allPages = _.without(allPages, indexPageName);
   const pageUid = getPageUidByPageTitle(indexPageName);

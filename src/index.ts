@@ -32,8 +32,7 @@ const postGraph = async (token:string, description: string) => {
     body: JSON.stringify(graph)
 }
 let response = await fetch(`${SERVER_URL}/graph/`, options);
-let responseJSON = await response.json();
-return responseJSON;
+return response;
 }
 
 // Generate the Index and Log Page for the Roam Graph.
@@ -131,10 +130,8 @@ export default runExtension({
               React.useEffect(() => {
                 const graphName = window.roamAlphaAPI.graph.name;
                 const description = JSON.parse(localStorage.getItem(`${graphName}_graphDescription`));
-                const token = JSON.parse(localStorage.getItem(`${graphName}_graphToken`));
                 if (description) {
                   setGraphDescription(description);
-                  setTokenValue(token);
                 }
               }, []);
 
@@ -146,12 +143,20 @@ export default runExtension({
                 setGraphDescription(event.target.value);
               };
 
-              const handleButtonClick = () => {
-                const res = postGraph(tokenValue, graphDescription);
+              const handleButtonClick = async () => {
+                const res = await postGraph(tokenValue, graphDescription);
+                if (res.status === 400) {
+                  renderToast({
+                    content: "Invalid Token! Please check your token again!",
+                    intent: "danger",
+                    id: "roam-js-graphgator"
+                  });
+                  return;
+                }
+                let response = await res.json();
                 const graphName = window.roamAlphaAPI.graph.name;
                 localStorage.setItem(`${graphName}_graphDescription`, JSON.stringify(graphDescription));
-                localStorage.setItem(`${graphName}_graphToken`, JSON.stringify(tokenValue));
-                res.then((data) => {
+                response.then(() => {
                   renderToast({
                     content: "Your graph is getting synced! Please wait for sometime!",
                     intent: "primary",
