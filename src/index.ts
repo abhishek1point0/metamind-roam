@@ -79,8 +79,8 @@ export default runExtension({
 
               const handleToggle = () => {
                 const graphName = window.roamAlphaAPI.graph.name;
-                localStorage.setItem(`${graphName}_indexPage`, JSON.stringify(isToggled));
                 setIsToggled(!isToggled);
+                localStorage.setItem(`${graphName}_indexPage`, JSON.stringify(!isToggled));
               }
 
               const generatePage = () => {
@@ -144,6 +144,9 @@ export default runExtension({
               };
 
               const handleButtonClick = async () => {
+                const graphName = window.roamAlphaAPI.graph.name;
+                localStorage.setItem(`${graphName}_graphDescription`, JSON.stringify(graphDescription));
+
                 const res = await postGraph(tokenValue, graphDescription);
                 if (res.status === 400) {
                   renderToast({
@@ -152,10 +155,15 @@ export default runExtension({
                     id: "roam-js-graphgator"
                   });
                   return;
+                } else if (res.status === 500) {
+                  renderToast({
+                    content: "Something went wrong! Please try again!",
+                    intent: "danger",
+                    id: "roam-js-graphgator"
+                  });
+                  return;
                 }
                 let response = await res.json();
-                const graphName = window.roamAlphaAPI.graph.name;
-                localStorage.setItem(`${graphName}_graphDescription`, JSON.stringify(graphDescription));
                 response.then(() => {
                   renderToast({
                     content: "Your graph is getting synced! Please wait for sometime!",

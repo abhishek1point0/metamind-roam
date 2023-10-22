@@ -7,8 +7,7 @@ import renderToast from "roamjs-components/components/Toast";
 import { getRenamedPage, getRecentEditedPages, getModifiedPage, getDateFilteredPages } from "./utils";
 
 export const createIndexPage = (createIndexPageIsManual: boolean) => {
-  const graphName = window.roamAlphaAPI.graph.name;
-  const indexPageName = `Index Page / ${graphName}`;
+  const indexPageName = `M/Index Page`;
   let allPages = getRecentEditedPages();
   allPages = _.without(allPages, indexPageName);
   const pageUid = getPageUidByPageTitle(indexPageName);
@@ -93,6 +92,7 @@ export const createUpdateLogPage = (lastRunSeconds: number, numberOfSync: number
   Promise.all([createPage({ title: pageTitle, })]).then(
     (data) => {
       const pageUid = data[0];
+      generateUpdateLogIndexPage(pageTitle, pageUid)
       createBlocks(pageUid, renamedPages, modifiedPages, newPages);
     }).catch((e) => {
       const pageUid = getPageUidByPageTitle(pageTitle);
@@ -107,35 +107,36 @@ export const createUpdateLogPage = (lastRunSeconds: number, numberOfSync: number
           intent: "warning",
           id: "roam-js-graphgator-log-page"
         });
+        generateUpdateLogIndexPage(pageTitle, pageUid)
         createBlocks(pageUid, renamedPages, modifiedPages, newPages);
       });
     });
-
-  generateUpdateLogIndexPage(pageTitle)
 }
 
-export const generateUpdateLogIndexPage = (updatePageTitle: string) => {
-  const graphName = window.roamAlphaAPI.graph.name;
-  const pageTitle = `Update Logs / ${graphName}`;
+export const generateUpdateLogIndexPage = (updatePageTitle: string, updateLogPageUid: string) => {
+  const pageTitle = `M/Update Logs`;
   const pageUid = getPageUidByPageTitle(pageTitle);
   if (pageUid === "") {
     Promise.all([createPage({ title: pageTitle, })]).then(
       (data) => {
         const pageUid = data[0];
-        createUpdateLogBlock(updatePageTitle, pageTitle, pageUid);
+        createUpdateLogBlock(updatePageTitle, pageTitle, pageUid, updateLogPageUid);
       }
     )
   }
   else {
-    createUpdateLogBlock(updatePageTitle, pageTitle, pageUid);
+    createUpdateLogBlock(updatePageTitle, pageTitle, pageUid, updateLogPageUid);
   }
 }
 
-function createUpdateLogBlock(updatePageTitle: string, pageTitle: string, pageUid: string) {
+function createUpdateLogBlock(updatePageTitle: string, pageTitle: string, pageUid: string, updateLogPageUid: string) {
   const blockText = `[[${updatePageTitle}]]\n**Title** :\n**Date** : [[${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: '2-digit' })}]]`;
   const blockUid = getBlockUidByTextOnPage({ text: blockText, title: pageTitle });
   if (blockUid !== "") {
     Promise.all([deleteBlock(blockUid)]);
   }
-  createBlock({ node: { text: blockText }, parentUid: pageUid });
+  createBlock({ node: { text: blockText }, parentUid: pageUid }).then((data) => {
+    const blockUid = data;
+    createBlock({ node: { text: `{{[[embed]]: ((${blockUid}))}}` }, parentUid: updateLogPageUid });
+  });
 }
