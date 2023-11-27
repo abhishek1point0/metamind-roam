@@ -1,8 +1,4 @@
 import runExtension from "roamjs-components/util/runExtension";
-import React from "react";
-import { Button } from "@blueprintjs/core";
-import renderToast from "roamjs-components/components/Toast";
-import { postGraph } from "./utils";
 import PageGenerationWidget from "./components/PageGenerationWidget";
 import GraphPublishingWidget from "./components/GraphPublishingWidget";
 

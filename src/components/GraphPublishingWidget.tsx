@@ -59,12 +59,19 @@ const GraphPublishingWidget = (extensionAPI: OnloadArgs["extensionAPI"]) => () =
       });
     });
   };
+
+  const showTokenInput = () => {
+    const graphName = window.roamAlphaAPI.graph.name;
+    extensionAPI.settings.set(`${graphName}_graphgator_token`, false);
+    setTokenSwitch(false);
+  }
+
   return (
     <div style={{ display: "flex", flexDirection: "column" }}>
       {tokenSwitch ? <Button
         text="API Token Saved!"
         icon="edit"
-        onClick={() => setTokenSwitch(false)}
+        onClick={showTokenInput}
         style={{ color: "#8BA2B2", fontWeight: "bold", borderRadius: "0.5rem"  }}
       /> : <input
         type="text"
