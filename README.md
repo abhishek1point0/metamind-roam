@@ -1,4 +1,4 @@
-# Metamind-Roam
+# Metamind Roam
 
 
 **The quickest way to learn about this plugin and the upcoming Metamind App is to watch this video : [WATCH HERE](https://www.loom.com/share/2c25d4ad6044410987d64ac1152885a7?sid=4a6ab46a-1bbf-42fa-8ee6-17f04037baa2)**

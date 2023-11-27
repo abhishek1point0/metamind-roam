@@ -1,5 +1,9 @@
 import getAllPageName from "roamjs-components/queries/getAllPageNames";
 import _ from "lodash";
+import getCurrentUserDisplayName from "roamjs-components/queries/getCurrentUserDisplayName";
+import getCurrentUserEmail from "roamjs-components/queries/getCurrentUserEmail";
+import { SERVER_URL } from "./constants";
+import { createIndexPage, createUpdateLogPage } from "./pageOperations";
 
 const convertToMilisecond = (stringDate: string|number) => {
   return (new Date(Number(stringDate)));
@@ -120,4 +124,51 @@ export const getModifiedPage = (filterDate: number) => {
   });
   let pages = generatePagesFromBlock(blocks, numberOfPages)
   return pages;
-}
+};
+
+// Get all the required data from Roam and return it as a JSON.
+const getAllData = () => {
+  const graphName = window.roamAlphaAPI.graph.name;
+  const email = getCurrentUserEmail();
+  const fullName = getCurrentUserDisplayName();
+  const graphData = { graphName, email, fullName };
+  return graphData;
+};
+
+export const generatePages = async (createIndexPageFlag: boolean) => {
+  const graph = getAllData();
+  let options = {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Access-Control-Request-Headers": "*",
+      "Access-Control-Request-Method": "*"
+    },
+    body: JSON.stringify(graph)
+  };
+  let res = await fetch(`${SERVER_URL}/last_sync/`, options);
+  let response = await res.json();
+  const lastRun = response["last_run"];
+  const numberOfSync = response["number_of_sync"] + 1;
+  createIndexPage(createIndexPageFlag);
+  createUpdateLogPage(lastRun, numberOfSync);
+  return response;
+};
+
+// Post the graph data to the server so that the server can sync the graph
+// and be ready to publish it.
+export const postGraph = async (token: string, description: string) => {
+  let graph: any = getAllData();
+  graph = { ...graph, token, description };
+  let options = {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Access-Control-Request-Headers": "*",
+      "Access-Control-Request-Method": "*"
+    },
+    body: JSON.stringify(graph)
+  };
+  let response = await fetch(`${SERVER_URL}/graph/`, options);
+  return response;
+};

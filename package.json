@@ -1,7 +1,7 @@
 {
-  "name": "graphgator",
+  "name": "metamind-roam",
   "version": "1.0.0",
-  "description": "Description for graphgator.",
+  "description": "A Roam Research plugin that helps the users to sync/publish the graph on the Metamind platform.",
   "main": "./build/main.js",
   "scripts": {
     "prebuild:roam": "npm install",
