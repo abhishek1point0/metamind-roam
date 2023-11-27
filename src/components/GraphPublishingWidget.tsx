@@ -72,7 +72,7 @@ const GraphPublishingWidget = (extensionAPI: OnloadArgs["extensionAPI"]) => () =
         text="API Token Saved!"
         icon="edit"
         onClick={showTokenInput}
-        style={{ color: "#8BA2B2", fontWeight: "bold", borderRadius: "0.5rem"  }}
+        style={{ color: "#8BA2B2", fontWeight: "bold", borderRadius: "0.5rem", marginBottom: "0.5rem" }}
       /> : <input
         type="text"
         value={tokenValue}
