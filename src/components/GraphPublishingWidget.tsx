@@ -49,15 +49,13 @@ const GraphPublishingWidget = (extensionAPI: OnloadArgs["extensionAPI"]) => () =
         id: "roam-js-graphgator"
       });
       return;
-    }
-    let response = await res.json();
-    response.then(() => {
+    } else {
       renderToast({
         content: "Your graph is getting synced! Please wait for sometime!",
         intent: "primary",
         id: "roam-js-graphgator"
       });
-    });
+    };
   };
 
   const showTokenInput = () => {
